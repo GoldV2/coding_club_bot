@@ -14,6 +14,7 @@ conn = sqlite3.connect(path + '/' + 'users.db')
 #               singleplayer_wins int,
 #               coop_wins int,
 #               vs_wins int,
-#               tic_tac_toe_wins int)""")
+#               tic_tac_toe_wins int,
+#               thumbs_ups int)""")
 
 #######################################################################

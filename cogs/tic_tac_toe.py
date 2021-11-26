@@ -3,7 +3,7 @@ from discord.embeds import Embed
 from discord.ext import commands, tasks
 from cogs.helpers import Helpers
 
-from db.user_management import get_db, increment_wins_on
+from db.user_management import get_db, increment_on
 
 # types
 from types import NoneType
@@ -44,11 +44,11 @@ class TicTacToeButton(discord.ui.Button['TicTacToe']):
         if winner is not None:
             if winner == view.X:
                 content = f'<@{view.challenger.id}> won!'
-                increment_wins_on(view.challenger.id, 'tic_tac_toe_wins')
+                increment_on(view.challenger.id, 'tic_tac_toe_wins')
 
             elif winner == view.O:
                 content = f'<@{view.opponent.id}> won!'
-                increment_wins_on(view.opponent.id, 'tic_tac_toe_wins')
+                increment_on(view.opponent.id, 'tic_tac_toe_wins')
 
             else:
                 content = "It's a tie!"
@@ -160,10 +160,10 @@ class Game(commands.Cog):
         third = await channel.guild.fetch_member(db[2][ID])
 
         embed = Embed(title="Tic-Tac-Toe Leaderboard", description="Congratulations to the top tic-tac-toers!")
+        embed.add_field(name="🥇 First Place 🥇", value=f"{first.nick} with {db[0][TIC_TAC_TOE_WINS]} wins", inline=False)
+        embed.add_field(name="🥈 Second Place 🥈", value=f"{second.nick} with {db[0][TIC_TAC_TOE_WINS]} wins", inline=False)
+        embed.add_field(name="🥉 Third Place 🥉", value=f"{third.nick} with {db[0][TIC_TAC_TOE_WINS]} wins", inline=False)
         embed.set_footer(text='To challenge someone type "@Coding Club tic @{opponent\'s name}" *without quotes and braces*')
-        embed.add_field(name="🥇 First Place 🥇", value=first.nick, inline=False)
-        embed.add_field(name="🥈 Second Place 🥈", value=second.nick, inline=False)
-        embed.add_field(name="🥉 Third Place 🥉", value=third.nick, inline=False)
 
         msgs = await channel.history(limit=1).flatten()
         msg = msgs[0]

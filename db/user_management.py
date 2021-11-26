@@ -6,7 +6,8 @@ c = conn.cursor()
 
 rows = {'id': 0, 'nick': 1, 'projects': 2,
         'singeplayer_wins': 3, 'coop_wins': 4,
-        'vs_wins': 5, 'tic_tac_toe_wins': 6}
+        'vs_wins': 5, 'tic_tac_toe_wins': 6,
+        'thumbs_ups': 7}
 
 def get_db() -> str:
     msg = ""
@@ -21,7 +22,7 @@ def get_db() -> str:
 
 def add_user(id: int, nick: str) -> None:
     with conn:
-        c.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?)", (id, nick, '', 0, 0, 0, 0))
+        c.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (id, nick, '', 0, 0, 0, 0, 0,))
 
 def remove_user(id: int) -> None:
     with conn:
@@ -72,10 +73,10 @@ def update_user_name(id: int, nick: str) -> None:
         c.execute("UPDATE users SET nick=? WHERE id=?",
             (nick, id,))
 
-def increment_wins_on(id: int, game: str) -> None:
+def increment_on(id: int, row: str) -> None:
     with conn:
         c.execute("SELECT * FROM users WHERE id=?", (id,))
         user = c.fetchone()
         
-        wins = user[rows[game]] + 1
-        c.execute(f"UPDATE users SET {game}=? WHERE id=?", (wins, id,))
+        wins = user[rows[row]] + 1
+        c.execute(f"UPDATE users SET {row}=? WHERE id=?", (wins, id,))

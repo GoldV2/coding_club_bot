@@ -3,7 +3,7 @@ from discord.channel import DMChannel
 
 from cogs.helpers import Helpers
 from cogs.project_display import EditProject
-from db.user_management import add_user, update_user_name, get_user_by_id
+from db.user_management import add_user, increment_on, update_user_name, get_user_by_id
 
 class Events(commands.Cog):
     def __init__(self, bot):
@@ -34,6 +34,16 @@ class Events(commands.Cog):
 
             else:
                 update_user_name(after.id, after.nick)
+
+    # TODO when adding more reactions, refactor so each reaction has its own function
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        # checking if someone gave a thumbs up to someone else's message in the help channel
+        help_channel = await Helpers.get_channel(self.bot.guilds[0], '🆘general-help🆘')
+        if payload.channel_id == help_channel.id:
+            if payload.emoji == '👍':
+                msg = await help_channel.fetch_message(payload.message_id)
+                increment_on(msg.author.id, 'thumbs_up')
 
     @commands.Cog.listener()
     async def on_ready(self):
