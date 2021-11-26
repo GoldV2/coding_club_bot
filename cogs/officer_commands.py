@@ -1,6 +1,6 @@
 from discord.ext import commands
 
-from db.user_management import view_db
+from db.user_management import get_db
 from cogs.helpers import Helpers
 from db.user_management import remove_user
 
@@ -10,7 +10,7 @@ class OfficerCommands(commands.Cog):
 
     @commands.command()
     async def print_db(self, ctx):
-        view_db()
+        print(get_db())
 
     @commands.command()
     async def reset_user(self, ctx, id):

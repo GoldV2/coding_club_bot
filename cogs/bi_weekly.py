@@ -20,6 +20,8 @@ class BiWeekly(commands.Cog):
         self.spreadsheet = self.get_spreadsheet()
         self.update_name_points()
 
+        self.write_podium.start()
+
     @staticmethod
     def get_spreadsheet():
         client = authorize(BiWeekly.CREDENTIALS)

@@ -1,9 +1,15 @@
+import discord
+from discord.embeds import Embed
+from discord.ext import commands, tasks
+from cogs.helpers import Helpers
+
+from db.user_management import get_db, increment_wins_on
+
+# types
 from types import NoneType
 from typing import Union
-import discord
-from discord.ext import commands
-from discord.interactions import Interaction
 from discord.member import Member
+from discord.interactions import Interaction
 
 class TicTacToeButton(discord.ui.Button['TicTacToe']):
     def __init__(self, x: int, y: int):
@@ -25,21 +31,25 @@ class TicTacToeButton(discord.ui.Button['TicTacToe']):
             self.disabled = True
             view.board[self.y][self.x] = view.X
             view.current_player = view.O
-            content = f"It is now {view.opponent.nick}'s turn"
+            content = f"It is now @<{view.opponent.id}>'s turn"
         else:
             self.style = discord.ButtonStyle.success
             self.label = 'O'
             self.disabled = True
             view.board[self.y][self.x] = view.O
             view.current_player = view.X
-            content = f"It is now {view.challenger.nick}'s turn"
+            content = f"It is now <@{view.challenger.id}>'s turn"
 
         winner = view.check_board_winner()
         if winner is not None:
             if winner == view.X:
-                content = f'{view.challenger.nick} won!'
+                content = f'<@{view.challenger.id}> won!'
+                increment_wins_on(view.challenger.id, 'tic_tac_toe_wins')
+
             elif winner == view.O:
-                content = f'{view.opponent.nick} won!'
+                content = f'<@{view.opponent.id}> won!'
+                increment_wins_on(view.opponent.id, 'tic_tac_toe_wins')
+
             else:
                 content = "It's a tie!"
 
@@ -75,7 +85,7 @@ class TicTacToe(discord.ui.View):
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         if interaction.user != self.player[self.current_player]:
-            await interaction.response.send_message(f"It is {self.player[self.current_player].nick}'s turn.", ephemeral=True)
+            await interaction.response.send_message(f"It is <@{self.player[self.current_player].id}>'s turn.", ephemeral=True)
             return False
 
         else:
@@ -121,15 +131,56 @@ class Game(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
+        self.write_podium.start()
+
     def sent_in_tic_tac_toe_channel(ctx):
-        return ctx.channel.name == '❌tic-tac-toe⭕'
+        return ctx.channel.name == 'tic-tac-toe'
 
     @commands.command()
     @commands.check(sent_in_tic_tac_toe_channel)
     async def tic(self, ctx, opponent) -> NoneType:
         challenger = ctx.author
         opponent = ctx.guild.get_member(int(opponent[3:-1]))
-        await ctx.send(f'{challenger.nick} vs. {opponent.nick}\n{challenger.nick} goes first', view=TicTacToe(challenger, opponent))
+        await ctx.send(f'<@{challenger.id}> vs. <@{opponent.id}>\n<@{challenger.id}> goes first', view=TicTacToe(challenger, opponent))
+
+    # TODO refactor and only works if there are 3+ users in the server
+    @tasks.loop(minutes=60)
+    async def write_podium(self):
+        channel = await Helpers.get_channel(self.bot.guilds[0], "❌│")
+
+        TIC_TAC_TOE_WINS = 6
+        db = sorted([user.split(', ') for user in get_db().split('\n')], key=lambda user: user[TIC_TAC_TOE_WINS])
+
+        ID = 0
+        first = await channel.guild.fetch_member(db[0][ID])
+        new_name = channel.name[:2] + first.nick
+        await channel.edit(name=new_name)
+
+        second = await channel.guild.fetch_member(db[1][ID])
+        third = await channel.guild.fetch_member(db[2][ID])
+
+        embed = Embed(title="Tic-Tac-Toe Leaderboard", description="Congratulations to the top tic-tac-toers!")
+        embed.set_footer(text='To challenge someone type "@Coding Club tic @{opponent\'s name}" *without quotes and braces*')
+        embed.add_field(name="🥇 First Place 🥇", value=first.nick, inline=False)
+        embed.add_field(name="🥈 Second Place 🥈", value=second.nick, inline=False)
+        embed.add_field(name="🥉 Third Place 🥉", value=third.nick, inline=False)
+
+        msgs = await channel.history(limit=1).flatten()
+        msg = msgs[0]
+
+        if msg:
+            await msg.edit(embed=embed)
+
+        else:
+            await channel.send(embed=embed)
+
+    @commands.command()
+    async def update_tic_tac_toe_podium(self, ctx):
+        await self.write_podium()
+
+    @write_podium.before_loop
+    async def before_tasks(self):
+        await self.bot.wait_until_ready()
 
 def setup(bot):
     bot.add_cog(Game(bot))

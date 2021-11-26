@@ -20,8 +20,8 @@ class Helpers(commands.Cog):
         await member.add_roles(role)
 
     @staticmethod
-    async def get_channel(bot, channel_name: str) -> TextChannel:
-        for channel in bot.guilds[0].channels:
+    async def get_channel(guild, channel_name: str) -> TextChannel:
+        for channel in guild.channels:
             if channel_name in channel.name:
                 return channel
 
