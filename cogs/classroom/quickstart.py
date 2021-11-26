@@ -6,7 +6,11 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/classroom.courses.readonly']
+SCOPES = ['https://www.googleapis.com/auth/classroom.courses.readonly',
+          'https://www.googleapis.com/auth/classroom.course-work.readonly',
+          'https://www.googleapis.com/auth/classroom.announcements.readonly',
+          'https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly',
+          'https://www.googleapis.com/auth/classroom.topics.readonly']
 
 def main():
     """Shows basic usage of the Classroom API.
@@ -24,7 +28,7 @@ def main():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                '/home/thinkland/bots/coding_club_bot/credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open('token.json', 'w') as token:

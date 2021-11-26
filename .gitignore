@@ -1,4 +1,5 @@
 token.env
-tokens.json
+token.json
 credentials.json
 cogs/keys.json
+users.db
