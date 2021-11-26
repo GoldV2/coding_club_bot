@@ -96,7 +96,7 @@ class EditProject(discord.ui.View):
         owner = get_user_by_project(interaction.message.id)
         
         ID = 0
-        if interaction.user.id != owner[ID]:
+        if interaction.user.id != owner[ID] and interaction.user.id != interaction.guild.onwer_id:
             await interaction.response.send_message("Only the owner can do this.", ephemeral=True)
             return False
 
