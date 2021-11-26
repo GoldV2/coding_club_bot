@@ -9,7 +9,7 @@ class BiWeekly(commands.Cog):
     medals = ['🥇', '🥈', '🥉']
     
     SPREADSHEET_ID = "1mBX_5twvCYDQgXVxoEoaGwvBbT6U7nkCXr4lxufabV0"
-    SHEET_NAME = "Week 1"
+    SHEET_NAME = "Points"
     
     CREDENTIALS = service_account.Credentials.from_service_account_file(
         path.dirname(path.realpath(__file__)) + '/' + 'keys.json',
@@ -29,7 +29,7 @@ class BiWeekly(commands.Cog):
 
     def get_and_format_sheet_data(self):    
         sheet = self.spreadsheet.worksheet(BiWeekly.SHEET_NAME)
-        data = sheet.get_all_values()
+        data = sheet.get_all_values()[1:]
 
         NAME = 0
         POINTS = 1
