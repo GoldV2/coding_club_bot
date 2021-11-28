@@ -17,5 +17,9 @@ if __name__ == "__main__":
         if file.endswith(".py"):
             bot.load_extension(f"cogs.{file[:-3]}")
 
+    for file in os.listdir(path + "/cogs/classroom"):
+        if file.endswith(".py"):
+            bot.load_extension(f"cogs.classroom.{file[:-3]}")
+
     load_dotenv("token.env")
     bot.run(os.getenv('DISCORD_TOKEN'))

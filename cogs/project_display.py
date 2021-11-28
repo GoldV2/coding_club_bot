@@ -12,6 +12,9 @@ from discord.channel import TextChannel
 
 from db.user_management import get_user_by_project, add_project_to_user, remove_project_from_user
 
+# TODO display message does not delete if you cancel
+# TODO person puts invalid link and fucks everything up
+# TODO when trying to edit, and it is not yours, ephemeral message is not sent
 class Prompt(discord.ui.View):
     def __init__(self, prompt_type: str):
         super().__init__(timeout=None)
@@ -96,7 +99,7 @@ class EditProject(discord.ui.View):
         owner = get_user_by_project(interaction.message.id)
         
         ID = 0
-        if interaction.user.id != owner[ID] and interaction.user.id != interaction.guild.onwer_id:
+        if interaction.user.id != owner[ID] and interaction.user.id != interaction.guild.owner_id:
             await interaction.response.send_message("Only the owner can do this.", ephemeral=True)
             return False
 

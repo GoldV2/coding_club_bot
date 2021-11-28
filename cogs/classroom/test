@@ -1,0 +1,34 @@
+import os
+import pickle
+
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+
+PATH = os.path.dirname(os.path.realpath(__file__))
+SCOPES = ['https://www.googleapis.com/auth/classroom.courses.readonly',
+          'https://www.googleapis.com/auth/classroom.course-work.readonly',
+          'https://www.googleapis.com/auth/classroom.announcements.readonly',
+          'https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly',
+          'https://www.googleapis.com/auth/classroom.topics.readonly',
+          'https://www.googleapis.com/auth/classroom.rosters.readonly']
+CREDENTIALS = Credentials.from_authorized_user_file(PATH + '/token.json', SCOPES)
+
+def with_service(f):
+    def wrapper():
+        with build('classroom', 'v1', credentials=CREDENTIALS) as service:
+            f(service)
+
+    return wrapper
+
+@with_service
+def print_this(service):
+    courses = service.courses().list().execute()
+    for course in courses['courses']:
+        if course['name'] == "Coding Club 2021-2021":
+            id = course['id']
+            break
+    
+    got = service.courses().courseWorkMaterials().list(courseId=id, pageSize=3).execute()
+    print(got)
+
+print_this()
