@@ -6,3 +6,4 @@ users.db
 __pycache__/
 teachers.txt
 posted.txt
+to_add_teachers.txt
