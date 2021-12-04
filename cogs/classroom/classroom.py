@@ -1,7 +1,8 @@
 import os
+from datetime import datetime
 
 from discord.ext import commands, tasks
-from discord.embeds import Embed
+from discord import Embed, Color
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 
@@ -22,7 +23,7 @@ CREDENTIALS = Credentials.from_authorized_user_file(PATH + '/token.json', SCOPES
 def with_service(f):
     def wrapper(*args, **kwargs):
         with build('classroom', 'v1', credentials=CREDENTIALS) as service:
-            return f(service, *args, **kwargs)
+            return f(*args, service, **kwargs)
 
     return wrapper
 
@@ -37,33 +38,33 @@ class Classroom(commands.Cog):
         self.send_post.start()
 
     # TODO refactor, there is prboably a better way to do this
+    # TODO this way of doing this may cause problems in the future, so I need to grab all posts, sort by date, then post them on discord
     @with_service
-    @staticmethod
-    def get_last_post(service):
-        announcement = service.courses().announcements().list(courseId=Classroom.ID, pageSize=1).execute()['announcements'][0]
-        # pageSize = 1
-        course_work = service.courses().courseWork().list(courseId=Classroom.ID, pageSize=10).execute()['courseWork'] # [0]
-        course_work_material = service.courses().courseWorkMaterials().list(courseId=Classroom.ID, pageSize=1).execute()['courseWorkMaterial'][0]
+    def get_all_posts(self, service):
+        posts = []
+        posts += service.courses().announcements().list(courseId=Classroom.ID).execute()['announcements']
+        posts += service.courses().courseWork().list(courseId=Classroom.ID).execute()['courseWork']
+        posts += service.courses().courseWorkMaterials().list(courseId=Classroom.ID).execute()['courseWorkMaterial']
 
-        for cw in course_work:
-            if cw['creatorUserId'] == '110004525941236336917':
-                course_work = cw
-                break
+        # 2021-10-26T01:31:43.872Z
+        posts.sort(key=lambda post: datetime.strptime(post['creationTime'].split('T')[0], "%Y-%m-%d"))
 
-        posted = Classroom.get_posted()
-        # if announcement['id'] not in posted and announcement['state'] == 'PUBLISHED':
+        return posts
+
+        # posted = Classroom.get_posted()
+        # if announcement['id'] not in posted and announcement['state'] == 'PUBLISHED' and announcement['creatorUserId'] in self.teachers:
         #     return announcement
 
-        if course_work['id'] not in posted and course_work['state'] == 'PUBLISHED':
-            return course_work
+        # if (course_work['id'] not in posted and course_work['state'] == 'PUBLISHED'): # and course_work['creatorUserId'] in self.teachers):
+        #     return course_work
 
-        # TODO checking for state may be redundant
-        if course_work_material['id'] not in posted and course_work['state'] == 'PUBLISHED':
-            return course_work_material
+        # # TODO checking for state may be redundant
+        # if course_work_material['id'] not in posted and course_work['state'] == 'PUBLISHED' and course_work_material['creatorUserId'] in self.teachers:
+        #     return course_work_material
     
-        # redundant
-        else:
-            return None
+        # # redundant
+        # else:
+        #     return None
 
     @staticmethod
     def get_teachers() -> Dict[str, int]:
@@ -91,7 +92,7 @@ class Classroom(commands.Cog):
     # TODO add raise exceptions, in this case, raise an exception if not topic with such id
     @with_service
     @staticmethod
-    def get_topic_name(service, id: str) -> str:
+    def get_topic_name(id: str, service) -> str:
         topics = service.courses().topics().list(courseId=Classroom.ID).execute()['topic']
         for topic in topics:
             if topic['topicId'] == id:
@@ -99,20 +100,34 @@ class Classroom(commands.Cog):
 
     # TODO create some type of global variable so I can make these methods static and not have to do bot.guilds[0]
     async def create_post_embed(self, post):
-        creator = await self.bot.guilds[0].fetch_member(self.teachers[post['creatorUserId']])
+        # TODO delete this, for testing only
+        if post['creatorUserId'] in self.teachers:
+            creator = await self.bot.guilds[0].fetch_member(self.teachers[post['creatorUserId']])
         
+        else:
+            creator = await self.bot.guilds[0].fetch_member(250782339758555136)
+
         if 'title' in post:
             title = post['title']
 
         else:
+            color = Color.red()
             title = 'Announcement'
 
         alternate_link = post['alternateLink']
 
-        topic_name = Classroom.get_topic_name(post['topicId'])
+        topic_name = ''
+        if 'topicId' in post:
+            topic_name = Classroom.get_topic_name(post['topicId'])
 
-        # TODO make them color coded by topic
-        embed = Embed(description=topic_name, title=title, url=alternate_link)
+        # TODO find a way to combine this if-statement with the same one coming after
+        if 'dueDate' in post:
+            color = Color.green()
+        
+        if 'description' in post:
+            color = Color.blue()
+
+        embed = Embed(color=color, description=topic_name, title=title, url=alternate_link)
 
         embed.set_author(name=creator.nick, icon_url=creator.display_avatar.url)
 
@@ -120,7 +135,10 @@ class Classroom(commands.Cog):
             embed.add_field(name='Announcement', value=post['text'], inline=False)
 
         if 'description' in post:
-            embed.add_field(name='Description', value=post['description'][:post['description'].index('\n')], inline=False)
+            if '\n' in post['description']:
+                embed.add_field(name='Description', value=post['description'][:post['description'].index('\n')] + ' (...)', inline=False)
+            else:
+                embed.add_field(name='Description', value=post['description'] + ' (...)', inline=False)
 
         if 'dueDate' in post:
             due_date = post['dueDate']
@@ -131,19 +149,29 @@ class Classroom(commands.Cog):
 
             embed.add_field(name='Due Date', value=f'{day} by {time}')
 
-        embed.set_footer(text='Click on the post title for more information.')
+        embed.set_footer(text='Not all information is displayed. Please click on the title for more information.')
 
         return embed
 
     @tasks.loop(seconds=30)
     async def send_post(self):
-        post = Classroom.get_last_post()
-        
-        if post:
+        posts = self.get_all_posts()
+        posted = Classroom.get_posted()
+
+        for post in posts:
             channel = await Helpers.get_channel(self.bot.guilds[0], '📢announcements📢')
-            embed = await self.create_post_embed(post)
-            await channel.send(embed=embed)
-            Classroom.add_post(post['id'])
+            if post['id'] not in posted: 
+                if 'title' in post:
+                    if ('bi' in post['title'].lower()
+                        and 'weekly' in post['title'].lower()
+                        and '#' in post['title'].lower()):
+
+                        channel = await Helpers.get_channel(self.bot.guilds[0], 'bi-weekly-challenges')
+        
+
+                embed = await self.create_post_embed(post)
+                await channel.send(embed=embed)
+                Classroom.add_post(post['id'])
             
     @commands.command()
     async def print_commands(self, ctx):
