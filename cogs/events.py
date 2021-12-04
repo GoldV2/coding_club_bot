@@ -18,6 +18,7 @@ class Events(commands.Cog):
             return
 
         elif message.channel.name == 'edit-name' and message.author.id != message.guild.owner:
+            await message.delete()
             await message.author.edit(nick=message.content)
 
         print("Message sent by", message.author.name)
@@ -41,9 +42,9 @@ class Events(commands.Cog):
         # checking if someone gave a thumbs up to someone else's message in the help channel
         help_channel = await Helpers.get_channel(self.bot.guilds[0], '🆘general-help🆘')
         if payload.channel_id == help_channel.id:
-            if payload.emoji == '👍':
+            if str(payload.emoji) == '👍':
                 msg = await help_channel.fetch_message(payload.message_id)
-                increment_on(msg.author.id, 'thumbs_up')
+                increment_on(msg.author.id, 'thumbs_ups')
 
     @commands.Cog.listener()
     async def on_ready(self):
