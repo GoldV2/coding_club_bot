@@ -150,20 +150,20 @@ class Game(commands.Cog):
         channel = await Helpers.get_channel(self.bot.guilds[0], "❌│")
 
         TIC_TAC_TOE_WINS = 6
-        db = sorted([user.split(', ') for user in get_db().split('\n')], key=lambda user: int(user[TIC_TAC_TOE_WINS]))
+        db = sorted([user.split(', ') for user in get_db().split('\n')], key=lambda user: int(user[TIC_TAC_TOE_WINS]), reverse=True)
 
         ID = 0
-        first = await channel.guild.fetch_member(db[-1][ID])
+        first = await channel.guild.fetch_member(db[0][ID])
         new_name = channel.name[:2] + first.nick
         await channel.edit(name=new_name)
 
-        second = await channel.guild.fetch_member(db[-2][ID])
-        third = await channel.guild.fetch_member(db[-3][ID])
+        second = await channel.guild.fetch_member(db[1][ID])
+        third = await channel.guild.fetch_member(db[2][ID])
 
         embed = Embed(title="Tic-Tac-Toe Leaderboard", description="Congratulations to the top tic-tac-toers!")
-        embed.add_field(name="🥇 First Place 🥇", value=f"{first.nick} with {db[-1][TIC_TAC_TOE_WINS]} wins", inline=False)
-        embed.add_field(name="🥈 Second Place 🥈", value=f"{second.nick} with {db[-2][TIC_TAC_TOE_WINS]} wins", inline=False)
-        embed.add_field(name="🥉 Third Place 🥉", value=f"{third.nick} with {db[-3][TIC_TAC_TOE_WINS]} wins", inline=False)
+        embed.add_field(name="🥇 First Place 🥇", value=f"{first.nick} with {db[0][TIC_TAC_TOE_WINS]} wins", inline=False)
+        embed.add_field(name="🥈 Second Place 🥈", value=f"{second.nick} with {db[1][TIC_TAC_TOE_WINS]} wins", inline=False)
+        embed.add_field(name="🥉 Third Place 🥉", value=f"{third.nick} with {db[2][TIC_TAC_TOE_WINS]} wins", inline=False)
         embed.set_footer(text='To challenge someone type "@Coding Club tic @{opponent\'s name}" *without quotes and braces*')
 
         msgs = await channel.history(limit=1).flatten()

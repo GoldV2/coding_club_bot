@@ -15,7 +15,7 @@ class Forum(commands.Cog):
         channel = await Helpers.get_channel(self.bot.guilds[0], '🦮│')
 
         THUMBS_UPS = 7
-        db = sorted([user.split(', ') for user in get_db().split('\n')], key=lambda user: user[THUMBS_UPS])
+        db = sorted([user.split(', ') for user in get_db().split('\n')], key=lambda user: user[THUMBS_UPS], reverse=True)
 
         ID = 0
         first = await channel.guild.fetch_member(db[0][ID])
@@ -28,8 +28,8 @@ class Forum(commands.Cog):
         
         embed = Embed(title="Forum Leaderboard", description="Thank you to all helpers!")
         embed.add_field(name="🥇 First Place 🥇", value=f"{first.nick} helped {db[0][THUMBS_UPS]} people", inline=False)
-        embed.add_field(name="🥈 Second Place 🥈", value=f"{second.nick} helped {db[0][THUMBS_UPS]} people", inline=False)
-        embed.add_field(name="🥉 Third Place 🥉", value=f"{third.nick} helped {db[0][THUMBS_UPS]} people", inline=False)
+        embed.add_field(name="🥈 Second Place 🥈", value=f"{second.nick} helped {db[1][THUMBS_UPS]} people", inline=False)
+        embed.add_field(name="🥉 Third Place 🥉", value=f"{third.nick} helped {db[2][THUMBS_UPS]} people", inline=False)
         embed.set_footer(text='Never forget to react with a "👍" when you are helped in the "general-help" channel. That is how you can give credit to who helped you.')
 
         msgs = await channel.history(limit=1).flatten()
@@ -43,7 +43,7 @@ class Forum(commands.Cog):
 
     @commands.command()
     async def update_best_helper_channel_name(self, ctx):
-        self.write_best_helper_channel_name()
+        await self.write_best_helper_channel_name()
 
     @write_best_helper_channel_name.before_loop
     async def before_tasks(self):
