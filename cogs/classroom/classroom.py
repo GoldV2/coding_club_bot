@@ -5,6 +5,7 @@ from discord.ext import commands, tasks
 from discord import Embed, Color
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
 
 from cogs.helpers import Helpers
 
@@ -22,6 +23,13 @@ CREDENTIALS = Credentials.from_authorized_user_file(PATH + '/token.json', SCOPES
 
 def with_service(f):
     def wrapper(*args, **kwargs):
+        if not CREDENTIALS or not CREDENTIALS.valid:
+            if CREDENTIALS and CREDENTIALS.expired and CREDENTIALS.refresh_token:
+                CREDENTIALS.refresh(Request())
+        
+                with open(PATH + '/token.json', 'w') as token:
+                    token.write(CREDENTIALS.to_json())
+                    
         with build('classroom', 'v1', credentials=CREDENTIALS) as service:
             return f(*args, service, **kwargs)
 
