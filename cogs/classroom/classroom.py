@@ -181,11 +181,6 @@ class Classroom(commands.Cog):
                 await channel.send(embed=embed)
                 Classroom.add_post(post['id'])
             
-    @commands.command()
-    async def print_commands(self, ctx):
-        for command in self.bot.walk_commands():
-            print(command)
-
     @send_post.before_loop
     async def before_tasks(self):
         await self.bot.wait_until_ready()

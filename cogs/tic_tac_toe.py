@@ -176,6 +176,7 @@ class Game(commands.Cog):
             await channel.send(embed=embed)
 
     @commands.command()
+    @commands.is_owner()
     async def update_tic_tac_toe_podium(self, ctx):
         await self.write_podium()
 

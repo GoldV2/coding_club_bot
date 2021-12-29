@@ -9,13 +9,15 @@ class OfficerCommands(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    @commands.is_owner()
     async def print_db(self, ctx):
         print(get_db())
 
     @commands.command()
+    @commands.is_owner()
     async def reset_user(self, ctx, id):
         user = ctx.guild.get_member(int(id))
-        await Helpers.remove_role(ctx, user, "Member")
+        await Helpers.remove_role(user, "Member")
         remove_user(int(id))
 
 def setup(bot):

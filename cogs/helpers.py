@@ -10,13 +10,13 @@ class Helpers(commands.Cog):
         self.bot = bot
 
     @staticmethod
-    async def remove_role(ctx, member: Member, role_name: str) -> None:
-        role = get(ctx.guild.roles, name=role_name)
+    async def remove_role(member: Member, role_name: str) -> None:
+        role = get(member.guild.roles, name=role_name)
         await member.remove_roles(role)
 
     @staticmethod
-    async def give_role(guild, member: Member, role_name: str) -> None:
-        role = get(guild.roles, name=role_name)
+    async def add_role(member: Member, role_name: str) -> None:
+        role = get(member.guild.roles, name=role_name)
         await member.add_roles(role)
 
     @staticmethod

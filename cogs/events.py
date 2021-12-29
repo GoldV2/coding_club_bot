@@ -2,8 +2,9 @@ from discord.ext import commands
 from discord.channel import DMChannel
 
 from cogs.helpers import Helpers
-from cogs.project_display import EditProject
-from db.user_management import add_user, increment_on, update_user_name, get_user_by_id
+from cogs.project_display import EditProject, ProjectDisplayView
+from cogs.welcome import RoleMessage
+from db.user_management import add_user, remove_user, increment_on, update_user_name, get_user_by_id
 
 class Events(commands.Cog):
     def __init__(self, bot):
@@ -17,7 +18,7 @@ class Events(commands.Cog):
         elif type(message.channel) == DMChannel:
             return
 
-        elif message.channel.name == 'edit-name' and message.author.id != message.guild.owner:
+        elif message.channel.name == 'edit-name' and message.author.id != message.guild.owner.id:
             await message.delete()
             await message.author.edit(nick=message.content)
 
@@ -30,11 +31,15 @@ class Events(commands.Cog):
             user = get_user_by_id(after.id)
             if not user:
                 add_user(after.id, after.nick)
-                await Helpers.give_role(self.bot.guilds[0], after, 'Member')
+                await Helpers.add_role(after, 'Member')
                 print(f"{after.nick} added to db")
 
             else:
                 update_user_name(after.id, after.nick)
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        remove_user(member.id)
 
     # TODO when adding more reactions, refactor so each reaction has its own function
     @commands.Cog.listener()
@@ -49,8 +54,10 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.bot.add_view(EditProject())
-        print("Bot connected successfully!")
+        self.bot.add_view(RoleMessage())
+        self.bot.add_view(ProjectDisplayView())
 
+        print("Bot connected successfully!")
 
 def setup(bot):
     bot.add_cog(Events(bot))

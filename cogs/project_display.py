@@ -1,10 +1,11 @@
+import validators
+
 from discord.ext import commands
 from discord import Embed
 import discord
 
 # types
-from types import NoneType
-
+from typing import Union
 from discord.interactions import Interaction
 from discord.message import Message
 from discord.member import Member
@@ -12,84 +13,93 @@ from discord.channel import TextChannel
 
 from db.user_management import get_user_by_project, add_project_to_user, remove_project_from_user
 
-# TODO display message does not delete if you cancel
-# TODO person puts invalid link and fucks everything up
-# TODO when trying to edit, and it is not yours, ephemeral message is not sent
-class Prompt(discord.ui.View):
-    def __init__(self, prompt_type: str):
+class ProjectDisplay(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command()
+    @commands.is_owner()
+    async def update_display_message(self, ctx) -> None:
+        await ctx.send(content='\u200b', view=ProjectDisplayView())
+
+class ProjectDisplayView(discord.ui.View):
+    def __init__(self):
         super().__init__(timeout=None)
-        self.is_confirmed = None
-        self.prompt_type = prompt_type
-        self.error_msg = self.create_error_msg()
 
-    async def send_request_msg_to(self, user: Member) -> Message:
-        return await user.send(f"Respond with the {self.prompt_type} of your project. If you make a mistake, edit or write a new message then confirm.",
-            view=self)
+    @discord.ui.button(label="Display a Project", style=discord.ButtonStyle.green, custom_id='project_display')
+    async def display(self, button, interaction):
+        await interaction.response.defer()
 
-    def create_error_msg(self) -> str:
-        return f"Enter a {self.prompt_type} before confirming."
+        user = interaction.user
+        embed = await self.ask_to(user)
+        if not embed:
+            return
+
+        project_msg = await interaction.channel.send(embed=embed, view=EditProject())
+        add_project_to_user(user.id, project_msg.id)
+
+        await interaction.delete_original_message()
+        await interaction.channel.send(content="\u200b", view=self)
+
+        await user.send("Project created succesfuly!")
 
     @staticmethod
-    async def get_response(channel: TextChannel) -> Message:
-        msgs = await channel.history(limit=1).flatten()
-        msg = msgs[0]
+    async def ask_to(user: Member) -> Union[Embed, None]:
+        user = User(user)
 
-        return msg
+        title = await user.ask(TitlePrompt)
+        if not title:
+            return
+
+        description = await user.ask(DescriptionPrompt)
+        if not description:
+            return
+
+        image = await user.ask(ImagePrompt)
+        if not image:
+            return
+
+        link = await user.ask(LinkPrompt)
+        if not link:
+            return
+
+        embed = ProjectDisplayView.create_embed(user.user, title, description, image, link)
+        return embed
 
     @staticmethod
-    async def is_valid(interaction: Interaction) -> bool:
-        msg = await Prompt.get_response(interaction.channel)
-        return msg != interaction.message
+    def create_embed(user: Member, title: str, description: str, image: str, link: str) -> Embed:
+        embed = Embed(title=title,
+            description=description,
+            url=link)
 
-    async def send_error_msg(self, interaction: Interaction) -> NoneType:
-        if self.error_msg not in interaction.message.content:
-            await interaction.message.edit(content=interaction.message.content+f"\n*{self.error_msg}*")
+        embed.set_author(name=user.nick, icon_url=user.display_avatar.url)
+        embed.set_footer(text="Do not forget to click on the project title to visit it!")
+        embed.set_image(url=image)
+
+        return embed
+
+class User:
+    def __init__(self, user):
+        self.user = user
+
+    async def ask(self, PromptType) -> str:
+        prompt = PromptType()
+        request_msg = await prompt.send_request_msg_to(self.user)
         
-    @discord.ui.button(label='Confirm', style=discord.ButtonStyle.green)
-    async def confirm(self, button, interaction):
-        if not await self.is_valid(interaction):
-            await self.send_error_msg(interaction)
+        await prompt.wait()
+        if prompt.is_confirmed:
+            response_msg = await prompt.get_response(request_msg.channel)
+            await prompt.acknowledge(self.user, response_msg)
 
         else:
-            self.is_confirmed = True
-            self.stop()
+            await self.user.send("Goodbye!")
+            return
 
-    @discord.ui.button(label='Cancel', style=discord.ButtonStyle.grey)
-    async def cancel(self, button, interaction):
-        self.is_confirmed = False
-        self.stop()
+        # TODO i dont like this because I createed acknowledge to avoid checking the type of prompt, but now I gotta check anyways
+        if isinstance(prompt, ImagePrompt):
+            return response_msg.attachments[-1].url
 
-class TitlePrompt(Prompt):
-    def __init__(self):
-        super().__init__("title")
-
-class DescriptionPrompt(Prompt):
-    def __init__(self):
-        super().__init__("description")
-
-class ImagePrompt(Prompt):
-    def __init__(self):
-        super().__init__("image")
-
-    @staticmethod
-    def create_error_msg() -> str:
-        return "Attach an image before confirming."
-
-    async def is_valid(self, interaction: Interaction) -> bool:
-        msg = await self.get_response(interaction.channel)
-        return msg != interaction.message and len(msg.attachments) != 0
-
-class LinkPrompt(Prompt):
-    def __init__(self):
-        super().__init__("link")
-
-    @staticmethod
-    def create_error_msg():
-        return 'Enter a valid "http" link before confirming.'
-
-    async def is_valid(self, interaction: Interaction) -> bool:
-        msg = await self.get_response(interaction.channel)
-        return ("http" in msg.content and msg != interaction.message)
+        return response_msg.content
 
 class EditProject(discord.ui.View):
     def __init__(self):
@@ -105,11 +115,11 @@ class EditProject(discord.ui.View):
 
         return True
 
-    # TODO raises discord.errors.NotFound: 404 Not Found (error code: 10062): Unknown interaction
-    # works just fine though
-    @discord.ui.button(label='Edit', style=discord.ButtonStyle.grey, custom_id=f'edit_button')
+    @discord.ui.button(label='Edit', style=discord.ButtonStyle.grey, custom_id='edit_button')
     async def edit(self, button, interaction):
-        embed = await ProjectDisplay.ask_to(interaction.user)
+        await interaction.response.defer()
+        
+        embed = await ProjectDisplayView.ask_to(interaction.user)
         if not embed:
             return
         
@@ -123,85 +133,84 @@ class EditProject(discord.ui.View):
         remove_project_from_user(interaction.user.id, interaction.message.id)
         await interaction.message.delete()
 
-class User:
-    def __init__(self, user):
-        self.user = user
+class Prompt(discord.ui.View):
+    def __init__(self, prompt_type: str):
+        super().__init__(timeout=None)
+        self.is_confirmed = False
+        self.error_msg = f"Send a {prompt_type} before confirming."
+        self.prompt_type = prompt_type
 
-    async def ask(self, PromptType: Prompt) -> str:
-        prompt = PromptType()
-        request_msg = await prompt.send_request_msg_to(self.user)
-        
-        await prompt.wait()
-        if prompt.is_confirmed:
-            response_msg = await prompt.get_response(request_msg.channel)
-
-            # if this function is asking for an image
-            if PromptType == ImagePrompt:
-                image_url = response_msg.attachments[-1].url
-                await self.user.send(f"The image you attached is: {image_url}")
-                return image_url
-
-            else:
-                await self.user.send(f"You entered: {response_msg.content}")
+    @discord.ui.button(label='Confirm', style=discord.ButtonStyle.green)
+    async def confirm(self, button, interaction):
+        if not await self.is_valid(interaction):
+            await self.send_error_msg(interaction)
 
         else:
-            await self.user.send("Goodbye!")
-            return ''
+            self.is_confirmed = True
+            self.stop()
 
-        return response_msg.content
+    @discord.ui.button(label='Cancel', style=discord.ButtonStyle.grey)
+    async def cancel(self, button, interaction):
+        self.stop()
+    
+    @staticmethod
+    async def is_valid(interaction: Interaction) -> bool:
+        msg = await Prompt.get_response(interaction.channel)
+        return msg != interaction.message
 
-class ProjectDisplay(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    async def send_error_msg(self, interaction: Interaction) -> None:
+        if self.error_msg not in interaction.message.content:
+            await interaction.message.edit(content=interaction.message.content+f"\n*{self.error_msg}*")
+        
+    async def acknowledge(self, user: Member, response: Message) -> None:
+        await user.send(f"You entered: {response.content}")
 
     @staticmethod
-    def create_embed(user: Member, title: str, description: str, image: str, link: str) -> Embed:
-        embed = Embed(title=title,
-            description=description,
-            url=link)
+    async def get_response(channel: TextChannel) -> Message:
+        msgs = await channel.history(limit=1).flatten()
+        msg = msgs[0]
 
-        embed.set_author(name=user.nick, icon_url=user.display_avatar.url)
-        embed.set_footer(text="Do not forget to click on the project title to visit it!")
-        embed.set_image(url=image)
+        return msg
 
-        return embed
+    async def send_request_msg_to(self, user: Member) -> Message:
+        return await user.send(f"Respond with the {self.prompt_type} of your project. If you make a mistake, edit or send a new message then confirm.",
+            view=self)
 
-    @staticmethod
-    async def ask_to(user: Member) -> Embed: # TODO returns Embed or bool
-        user = User(user)
+class TitlePrompt(Prompt):
+    def __init__(self):
+        super().__init__("title")
 
-        title = await user.ask(TitlePrompt)
-        if not title:
-            return False
+class DescriptionPrompt(Prompt):
+    def __init__(self):
+        super().__init__("description")
 
-        description = await user.ask(DescriptionPrompt)
-        if not description:
-            return False
+class ImagePrompt(Prompt):
+    def __init__(self):
+        super().__init__("image")
 
-        image = await user.ask(ImagePrompt)
-        if not image:
-            return False
+        self.error_msg = "Attach and send an image before confirming."
 
-        link = await user.ask(LinkPrompt)
-        if not link:
-            return False
+    async def is_valid(self, interaction: Interaction) -> bool:
+        msg = await self.get_response(interaction.channel)
+        return msg != interaction.message and len(msg.attachments) != 0
 
-        embed = ProjectDisplay.create_embed(user.user, title, description, image, link)
-        return embed
+    async def acknowledge(self, user, response: Message) -> None:
+        image_url = response.attachments[-1].url
+        await user.send(f"The image you attached is: \n> <{image_url}>")
 
-    @commands.command()
-    async def display(self, ctx) -> NoneType:
-        user = ctx.author
-        embed = await ProjectDisplay.ask_to(user)
-        if not embed:
-            return
+class LinkPrompt(Prompt):
+    def __init__(self):
+        super().__init__("link")
 
-        project_msg = await ctx.send(embed=embed, view=EditProject())
+        self.error_msg = 'Enter a valid "http" link before confirming.'
 
-        add_project_to_user(user.id, project_msg.id)
+    async def is_valid(self, interaction: Interaction) -> bool:
+        msg = await self.get_response(interaction.channel)
+        return validators.url(msg.content) and msg != interaction.message
 
-        await user.send("Project created succesfuly!")
-        await ctx.message.delete()
+    async def acknowledge(self, user, response: Message) -> None:
+        response = response.content
+        await user.send(f"You entered: <{response}>")
 
 def setup(bot):
     bot.add_cog(ProjectDisplay(bot))

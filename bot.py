@@ -6,7 +6,8 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'), owner_id=250782339758555136,
-                   intents=Intents.all())
+                   intents=Intents.all(),
+                   help_command=None)
 
 path = os.path.dirname(os.path.realpath(__file__))
 if path not in sys.path:

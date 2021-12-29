@@ -42,6 +42,7 @@ class Forum(commands.Cog):
             await channel.send(embed=embed)
 
     @commands.command()
+    @commands.is_owner()
     async def update_best_helper_channel_name(self, ctx):
         await self.write_best_helper_channel_name()
 

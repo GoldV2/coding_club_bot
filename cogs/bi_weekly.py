@@ -98,6 +98,7 @@ class BiWeekly(commands.Cog):
         await self.update_channel_name_and_congrats_message(channels)
 
     @commands.command()
+    @commands.is_owner()
     async def update_podium(self, ctx):
         await self.write_podium()
 
