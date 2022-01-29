@@ -6,7 +6,6 @@ import discord
 
 # types
 from typing import Union
-from discord.interactions import Interaction
 from discord.message import Message
 from discord.member import Member
 from discord.channel import TextChannel
@@ -105,7 +104,7 @@ class EditProject(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    async def interaction_check(self, interaction: Interaction) -> bool:
+    async def interaction_check(self, interaction) -> bool:
         owner = get_user_by_project(interaction.message.id)
         
         ID = 0
@@ -154,11 +153,11 @@ class Prompt(discord.ui.View):
         self.stop()
     
     @staticmethod
-    async def is_valid(interaction: Interaction) -> bool:
+    async def is_valid(interaction) -> bool:
         msg = await Prompt.get_response(interaction.channel)
         return msg != interaction.message
 
-    async def send_error_msg(self, interaction: Interaction) -> None:
+    async def send_error_msg(self, interaction) -> None:
         if self.error_msg not in interaction.message.content:
             await interaction.message.edit(content=interaction.message.content+f"\n*{self.error_msg}*")
         
@@ -190,7 +189,7 @@ class ImagePrompt(Prompt):
 
         self.error_msg = "Attach and send an image before confirming."
 
-    async def is_valid(self, interaction: Interaction) -> bool:
+    async def is_valid(self, interaction) -> bool:
         msg = await self.get_response(interaction.channel)
         return msg != interaction.message and len(msg.attachments) != 0
 
@@ -204,7 +203,7 @@ class LinkPrompt(Prompt):
 
         self.error_msg = 'Enter a valid "http" link before confirming.'
 
-    async def is_valid(self, interaction: Interaction) -> bool:
+    async def is_valid(self, interaction) -> bool:
         msg = await self.get_response(interaction.channel)
         return validators.url(msg.content) and msg != interaction.message
 

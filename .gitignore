@@ -1,9 +1,1 @@
-token.env
-token.json
-credentials.json
-cogs/keys.json
-users.db
 __pycache__/
-teachers.txt
-posted.txt
-to_add_teachers.txt

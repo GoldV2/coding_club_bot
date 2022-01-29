@@ -1,0 +1,12 @@
+{
+    "type": "service_account",
+    "project_id": "coding-club-bot",
+    "private_key_id": "46990f15318fabc08a0e9607a458de3b2e19b2ae",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7kdKI3rSlwRhL\nCopfFlbeA5Bw3hcxRHvrCS3+4F1qbi+03MOizWrZWVnjShSjUq9LZhItxdXYse1j\nkR3pKk8ruKef6bvHdXG05OXTVcEylc6XE+rQvnf1KYHABliM19E2mrVGF7yeQArS\nq6tC43+BjZgM3ff8PDHNPsskVNd26dit2NjvVmw1a+Xcc3ZCDCjOyzNfNDyayyVx\nXJFGHWdZCvPeRY8qeUAuuiDhAvew/V8/tdD5NPvrlG32uuJIKsVqDlNb2W7q5HeR\nZ5eolAIDKfLqb3SiRY/HqJoV1pX2o0EzX0MoiK3QsZPMGGpz3oc6u5OrIlOqJcYa\n/AJYyQxRAgMBAAECggEAGaMBOSbjXwJo7RzIM93sSpUHIX4hgmDfZQ0QpdUJv5nG\n2HwSG0bjU0jEoe3Gq1oKTo5pbqsrIt6S2TiE85EOWCX5d0Bto4H4ZCajCQMgEGds\nYLbeseBOqgody16yrLF0zXdQzn9BDwom0IuZMV/B1jXBsgSGuAmMLwblohYciwqI\nXPkSWzbSQ4dVHEAFH9QHS2ep12a0zCEQag/I3LyeuOZqGgW3hs0NHHHAZSQJ06Ue\nC8MfD/51w3bopXWu9qu+/ld62PqPv6O8PxbUOORo2yVdHx/cDv1aTCzr7ff4DmnO\nGNJIfX1MvFW+EZw2VnZ3c5Bnp5/fgjQnFPmdPIHgaQKBgQDis3e0JPbCfY/wc7hO\nJFdyrcW+NYsUSv3eGk6DGZAHmaN4dwykhqzYkc3NFBR5Fh+Eel6K6Oyfggjk6SSY\nclGo7bAUj/UPJ1DQbBWYsRIlqvwW8F/nUPb9AMls0xlEjy3Xkz6pw6ZAJfKSrQXH\ne7xrStOdBWfr7kC8VWBTdXMDRQKBgQDTz6teipRSNlz582xWmtJ5L3DaHh0DP7rb\npjbTeKjiAxOLVomCUxLeqR2+56e/Rl+K3cWCa4WSGdFhWINJCg6B1xR2UCkAQpkv\nsFtgGhWm6eYz/Ma9oqklxjGjwQjo6CuBh08/BKnkUyafK3CMzQqE794KR9RoniOP\nzj9v5UMPnQKBgQDVA2Va89CZd3okqddoNWWl7/p6e70vWDeq1nUnYoGfYpHjw5kx\njwoihP4n0NJb5JnA1Wq4g5yzVHAfB6LHS8PHQ2/MImhV0M9yx9yTGO7ATiWJOFwk\n8kLiADdD9icr8I1Wnpim05wHcqC3ibSAeJfXCPxF8qpvWfOiA2b7hMSJMQKBgEzm\njv9qLOOUXTlaibD/0P6ynLR0TnBJiRwKQsmQezBjkYr7Rj2Mz8MLf4M6NAscD8Ap\nOHZbd0lOGljPfArendnCLumtvNUdWOSZkPNZRRcuwKeLVNSw49yVEpyzjvqQoIsM\nh1cH6G6/SbxsVxansvQE6oatAY9iKuMhLKMBh9F5AoGAeeDhTD03rHn9ogAlGfEm\nyqTdNV31UZxj4aZ1lQLkqBdpd7zoqnWAw4oKDHK2Pp9ivExSe3b8mHjumy+sCal1\nzZ+dRyLeNS80Fv3b/NVtXDkEmMIcZQDatiiRxf6Ic6GXCuBrOhGpnsfV3WUV0bb7\nVK+ssEgGifZrWoMden6wIJM=\n-----END PRIVATE KEY-----\n",
+    "client_email": "coding-club-bot@coding-club-bot.iam.gserviceaccount.com",
+    "client_id": "102027283014877067549",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/coding-club-bot%40coding-club-bot.iam.gserviceaccount.com"
+  }
