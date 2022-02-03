@@ -19,6 +19,7 @@ SCOPES = ['https://www.googleapis.com/auth/classroom.courses.readonly',
           'https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly',
           'https://www.googleapis.com/auth/classroom.topics.readonly',
           'https://www.googleapis.com/auth/classroom.rosters.readonly']
+
 CREDENTIALS = Credentials.from_authorized_user_file(PATH + '/token.json', SCOPES)
 
 def with_service(f):
