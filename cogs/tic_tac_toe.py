@@ -140,7 +140,12 @@ class Game(commands.Cog):
     @commands.check(sent_in_tic_tac_toe_channel)
     async def tic(self, ctx, opponent) -> NoneType:
         challenger = ctx.author
-        opponent = ctx.guild.get_member(int(opponent[3:-1]))
+        
+        opponent_id = opponent[2:-1]
+        if '!' in opponent_id:
+            opponent_id = opponent_id.replace('!', '')
+        opponent = ctx.guild.get_member(int(opponent_id))
+
         await ctx.send(f'<@{challenger.id}> vs. <@{opponent.id}>\n<@{challenger.id}> goes first', view=TicTacToe(challenger, opponent))
 
     # TODO refactor and only works if there are 3+ users in the server
