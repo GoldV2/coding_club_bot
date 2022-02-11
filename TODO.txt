@@ -1,2 +1,2 @@
 create a way to steal memes from ucvts enchidirion
-add a button to play tictactoe
+add a button to play tictactoe make it move every 5 minutes or so
