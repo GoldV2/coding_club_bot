@@ -154,7 +154,7 @@ class Classroom(commands.Cog):
             day = f"{due_date['month']}/{due_date['day']}/{due_date['year']}"
 
             due_time = post['dueTime']
-            time = f"{due_time['hours']}:{due_time['minutes']}"
+            time = f"{due_time['hours']}:{due_time['minutes'] if 'minutes' in due_time else '00'}"
 
             embed.add_field(name='Due Date', value=f'{day} by {time}')
 
@@ -162,7 +162,7 @@ class Classroom(commands.Cog):
 
         return embed
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(minutes=30)
     async def send_post(self):
         posts = self.get_all_posts()
         posted = Classroom.get_posted()
