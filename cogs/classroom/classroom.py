@@ -24,8 +24,14 @@ CREDENTIALS = Credentials.from_authorized_user_file(PATH + '/token.json', SCOPES
 
 def with_service(f):
     def wrapper(*args, **kwargs):
+        print('--------------------')
+        print('checking creds')
+        print('--------------------')
         if not CREDENTIALS or not CREDENTIALS.valid:
             if CREDENTIALS and CREDENTIALS.expired and CREDENTIALS.refresh_token:
+                print('--------------------')
+                print('creds refreshed')
+                print('--------------------')
                 CREDENTIALS.refresh(Request())
         
                 with open(PATH + '/token.json', 'w') as token:

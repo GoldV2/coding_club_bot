@@ -22,9 +22,6 @@ class Events(commands.Cog):
             await message.delete()
             await message.author.edit(nick=message.content)
 
-        print("Message sent by", message.author.name)
-        print("-", message.content)
-    
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         if before.nick != after.nick:
