@@ -10,7 +10,6 @@ class Welcome(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
     # TODO make this a nice little process you can do through discord, similar to display
     @commands.command()
     @commands.is_owner()
@@ -34,7 +33,7 @@ class Welcome(commands.Cog):
         field_2_value = 'To get started, write out your full name completely in the "edit-name" channel or edit your server profile.'
 
 
-        footer = "Classroom code: jyaz4mu"
+        footer = "Classroom code: hgtqblw"
         
         color = discord.Color.yellow()
 

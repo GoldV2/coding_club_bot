@@ -29,7 +29,6 @@ class Events(commands.Cog):
             if not user:
                 add_user(after.id, after.nick)
                 await Helpers.add_role(after, 'Member')
-                print(f"{after.nick} added to db")
 
             else:
                 update_user_name(after.id, after.nick)
