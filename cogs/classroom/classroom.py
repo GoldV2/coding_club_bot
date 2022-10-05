@@ -28,7 +28,8 @@ def with_service(f):
             if CREDENTIALS and CREDENTIALS.expired and CREDENTIALS.refresh_token:
 
                 CREDENTIALS.refresh(Request())
-        
+                print("CREDENTIALS REFRESEHD")
+
                 with open(PATH + '/token.json', 'w') as token:
                     token.write(CREDENTIALS.to_json())
                     
