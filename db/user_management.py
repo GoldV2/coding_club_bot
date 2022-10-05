@@ -10,15 +10,11 @@ rows = {'id': 0, 'nick': 1, 'projects': 2,
         'thumbs_ups': 7}
 
 def get_db() -> str:
-    msg = ""
     with conn:
         c.execute("SELECT * FROM users")
         users = c.fetchall()
-        
-        for user in users:
-            msg += ', '.join(map(str, user)) + "\n"
 
-    return msg[:-1]
+    return users
 
 def add_user(id: int, nick: str) -> None:
     with conn:

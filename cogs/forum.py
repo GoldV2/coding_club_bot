@@ -15,8 +15,9 @@ class Forum(commands.Cog):
         channel = await Helpers.get_channel(self.bot.guilds[0], '🦮│')
 
         THUMBS_UPS = 7
-        db = sorted([user.split(', ') for user in get_db().split('\n')], key=lambda user: user[THUMBS_UPS], reverse=True)
-
+        # db = sorted([user.split(', ') for user in get_db().split('\n')], key=lambda user: user[THUMBS_UPS], reverse=True)
+        db = sorted(get_db(), key=lambda user: user[THUMBS_UPS], reverse=True)
+        
         ID = 0
         first = await channel.guild.fetch_member(db[0][ID])
 
@@ -25,7 +26,7 @@ class Forum(commands.Cog):
 
         second = await channel.guild.fetch_member(db[1][ID])
         third = await channel.guild.fetch_member(db[2][ID])
-        
+
         embed = Embed(title="Forum Leaderboard", description="Thank you to all helpers!")
         embed.add_field(name="🥇 First Place 🥇", value=f"{first.nick} helped {db[0][THUMBS_UPS]} people", inline=False)
         embed.add_field(name="🥈 Second Place 🥈", value=f"{second.nick} helped {db[1][THUMBS_UPS]} people", inline=False)
@@ -37,7 +38,7 @@ class Forum(commands.Cog):
             msg = msgs[0]
 
             await msg.edit(embed=embed)
-
+    
         else:
             await channel.send(embed=embed)
 

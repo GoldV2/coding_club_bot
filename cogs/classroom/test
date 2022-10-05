@@ -29,6 +29,5 @@ def print_this(service):
             break
     
     got = service.courses().courseWorkMaterials().list(courseId=id, pageSize=3).execute()
-    print(got)
 
 print_this()

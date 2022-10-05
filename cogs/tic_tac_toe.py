@@ -155,7 +155,7 @@ class Game(commands.Cog):
         channel = await Helpers.get_channel(self.bot.guilds[0], "❌│")
 
         TIC_TAC_TOE_WINS = 6
-        db = sorted([user.split(', ') for user in get_db().split('\n')], key=lambda user: int(user[TIC_TAC_TOE_WINS]), reverse=True)
+        db = sorted(get_db(), key=lambda user: int(user[TIC_TAC_TOE_WINS]), reverse=True)
 
         ID = 0
         first = await channel.guild.fetch_member(db[0][ID])
