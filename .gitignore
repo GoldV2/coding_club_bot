@@ -1,1 +1,5 @@
+cogs/keys.json
+token.env
+cogs/credentials.json
+cogs/token.json
 __pycache__/
