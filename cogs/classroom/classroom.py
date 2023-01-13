@@ -40,7 +40,7 @@ def with_service(f):
 
 class Classroom(commands.Cog):
     
-    ID = '396268373072'
+    ID = '546579212388'
 
     def __init__(self, bot):
         self.bot = bot
@@ -53,10 +53,18 @@ class Classroom(commands.Cog):
     @with_service
     def get_all_posts(self, service):
         posts = []
-        posts += service.courses().announcements().list(courseId=Classroom.ID).execute()['announcements']
-        posts += service.courses().courseWork().list(courseId=Classroom.ID).execute()['courseWork']
-        posts += service.courses().courseWorkMaterials().list(courseId=Classroom.ID).execute()['courseWorkMaterial']
-
+        try:
+            posts += service.courses().announcements().list(courseId=Classroom.ID).execute()['announcements']
+        except:
+            pass
+        try:
+            posts += service.courses().courseWork().list(courseId=Classroom.ID).execute()['courseWork']
+        except:
+            pass
+        try:
+            posts += service.courses().courseWorkMaterials().list(courseId=Classroom.ID).execute()['courseWorkMaterial']
+        except:
+            pass
         # 2021-10-26T01:31:43.872Z
         posts.sort(key=lambda post: datetime.strptime(post['creationTime'].split('T')[0], "%Y-%m-%d"))
 
